@@ -1,0 +1,98 @@
+SELECT movie.name
+FROM movie
+WHERE movie.rating > 7
+
+match (movie:Movie)
+where movie.rating > 7
+return movie.name
+
+---------------------------------------
+SELECT actors.name
+FROM actors
+ 	LEFT JOIN acted_in ON acted_in.actor_id = actors.id
+	LEFT JOIN movies ON movies.id = acted_in.movie_id
+WHERE movies.title = "The Matrix"
+
+match (actor:Actor) - [:ACTED_IN] -> (movie:Movie {title: "The Matrix"})
+return actor.name
+-----------------------------------------
+
+3 entidades nos banco de dados orientado a grafos:
+    - nodes
+    - relantionships
+    - paths
+
+MATCH (n:Person {name:'Anna'})
+RETURN n.born AS birthYear
+
+match (: Person) - [r: KNOWS WHERE r.since < 2020] -> (friend:Person)
+return count(r) AS numberOfFriends
+----------------------------------------
+
+match (person:Person {name:"Keanu Reaves"})
+return person.name AS name, peson.born AS born
+
+-----------------------------------------
+
+match (people:Person)
+return people
+limit 5
+
+-----------------------------------------
+
+match (bornInEights : Person)
+where bornInEights.born <= 1990 AND bornInEights.born > 1980
+return bornInEights.name as name, bornInEights.born as born
+order by born DESC
+
+-----------------------------------------
+
+MATCH (m:Movie {title: 'The Matrix'})<-[d:DIRECTED]-(p:Person)
+RETURN p.name as director
+
+****Aqui, você está procurando por nós de filme (Movie) com o título 'The Matrix' que são conectados por uma relação :DIRECTED a nós de pessoa (Person). 
+****O <-[d:DIRECTED] indica uma relação direcionada da pessoa para o filme, ou seja, você está procurando por pessoas que dirigiram o filme 'The Matrix'.
+
+MATCH (m:Movie {title: 'The Matrix'})-[d:DIRECTED]->(p:Person)
+RETURN p.name as director
+
+****Nesta consulta, você está procurando por nós de filme (Movie) com o título 'The Matrix' que são conectados por uma relação :DIRECTED a nós de pessoa (Person). 
+****O -[d:DIRECTED]-> indica uma relação direcionada do filme para a pessoa, ou seja, você está procurando por pessoas que foram dirigidas pelo filme 'The Matrix'.
+
+------------------------------------------
+
+MATCH (tom:Person {name:'Tom Hanks'})-[r]->(m:Movie)
+RETURN type(r) AS type, m.title AS movie
+
+****Usando o r ele traz todos os realacionamentos
+
+-----------------------------------------
+
+match (:Person) - [r:!acted_in] -> (movies:Movie)
+return type(r) As type, movies.title as movies
+
+***Todos relacionamentos diferentes de ACTED_IN
+
+----------------------------------------
+
+MATCH (n)
+DETACH DELETE n
+
+***Deletar um grafo
+
+----------------------------------------
+
+CREATE
+  (alice:Person {name:'Alice', age: 38, eyes: 'brown'}),
+  (bob:Person {name: 'Bob', age: 25, eyes: 'blue'}),
+  (charlie:Person {name: 'Charlie', age: 53, eyes: 'green'}),
+  (daniel:Person {name: 'Daniel', eyes: 'brown'}),
+  (eskil:Person {name: 'Eskil', age: 41, eyes: 'blue'}),
+  (alice)-[:KNOWS]->(bob),
+  (alice)-[:KNOWS]->(charlie),
+  (bob)-[:KNOWS]->(daniel),
+  (charlie)-[:KNOWS]->(daniel),
+  (bob)-[:MARRIED]->(eskil)
+
+----------------------------------------
+

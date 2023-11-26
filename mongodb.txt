@@ -1,0 +1,145 @@
+***para mostrar os bancos de dados
+show dbs
+
+***criar/usar um banco
+use blog
+
+***criar uma tabela
+db.createCollection("posts")
+
+***inserir um dado
+db.posts.insertOne({"title":"Meu mundo caiu", "ano":2020})
+
+***inserir varios dados
+db.posts.insertMany([{"title":"Meu mundo caiu", "ano":2020}, {"title":"Quando subiu o alcool", "ano":2021}])
+
+***buscar todos os dados
+db.posts.find()
+db.posts.find({title:"Meu mundo caiu"})
+
+***buscar um dado
+db.posts.findOne()
+db.posts.findOne({title:"Meu mundo caiu"})
+
+*** Projeção - segundo parametro - se for omitido todos os campos serão inclusos no resultado
+db.posts.find({}, {title:1, date:1})     // mostra todos o campo title e o campo date
+db.posts.find({}, {category:0})          // mostra todos o campo menos category
+
+***atualizar um dado
+db.posts.updateOne({"title": "Meu mundo caiu"}, {$set:{"ano":2021}})
+
+***atualizar um dado, caso esse dado não esteja incluso, ele irá inseri-lo
+db.posts.updateOne({"title":"Post 4"}, {$set: {"title":"Post 4", "ano": 2023}}, {upsert:true})
+
+***somar um ano em todos os posts
+db.posts.updateMany({}, {$inc:{"ano":1}})
+
+***deletar um dado
+db.posts.deleteOne({"title":"Post 4"})
+
+***deletar varios dados
+db.posts.deleteMany({"ano":2022})
+
+***OPERATORS
+***$eq: Values are equal
+db.produtos.find({ preco: { $eq: 50 } })
+
+***$ne: Values are not equal
+db.produtos.find({ preco: { $ne: 50 } })
+
+***$gt: Value is greater than another value
+db.produtos.find({ preco: { $gt: 100 } })
+
+***$gte: Value is greater than or equal to another value
+db.produtos.find({ preco: { $gte: 100 } })
+
+***$lt: Value is less than another value
+db.produtos.find({ preco: { $lt: 50 } })
+
+***$lte: Value is less than or equal to another value
+db.produtos.find({ preco: { $lte: 50 } })
+
+***$in: Value is matched within an array
+db.produtos.find({ categoria: { $in: ["Eletrônicos", "Computadores"] } })
+
+***$and: Returns documents where both queries match
+db.produtos.find({ $and: [{ preco: { $gt: 50 } }, { categoria: "Eletrônicos" }] })
+
+***$or: Returns documents where either query matches
+db.produtos.find({ $or: [{ preco: { $lt: 50 } }, { categoria: "Roupas" }] })
+
+***AGGREGATION
+***Pegue os posts com mais de um like, agrupe por categoria e some os likes dos posts
+db.posts.aggregate([
+  // Stage 1: Only find documents that have more than 1 like
+  {
+    $match: { likes: { $gt: 1 } }
+  },
+  // Stage 2: Group documents by category and sum each categories likes
+  {
+    $group: { _id: "$category", totalLikes: { $sum: "$likes" } }
+  }
+])
+
+***$group
+db.listingsAndReviews.aggregate(
+    [ { $group : { _id : "$property_type" } } ]
+)
+
+***$limit
+db.movies.aggregate([ { $limit: 1 } ])
+
+***$project
+db.restaurants.aggregate([
+  {
+    $project: {
+      "name": 1,
+      "cuisine": 1,
+      "address": 1
+    }
+  },
+  {
+    $limit: 5
+  }
+])
+
+***$match
+db.listingsAndReviews.aggregate([ 
+  { $match : { property_type : "House" } },
+  { $limit: 2 },
+  { $project: {
+    "name": 1,
+    "bedrooms": 1,
+    "price": 1
+  }}
+]) 
+
+***$count
+db.restaurants.aggregate([
+  {
+    $match: { "cuisine": "Chinese" }
+  },
+  {
+    $count: "totalChinese"
+  }
+])
+
+***$lookup
+db.comments.aggregate([
+  {
+    $lookup: {
+      from: "movies",
+      localField: "movie_id",
+      foreignField: "_id",
+      as: "movie_details",
+    },
+  },
+  {
+    $limit: 1
+  }
+])
+
+from: A coleção a ser usada para pesquisa no mesmo banco de dados
+localField: o campo na coleção primária que pode ser usado como um identificador exclusivo na fromcoleção.
+foreignField: o campo da fromcoleção que pode ser usado como identificador exclusivo na coleção primária.
+as: o nome do novo campo que conterá os documentos correspondentes da fromcoleção.
